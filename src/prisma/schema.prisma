@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+ datasource db {
+   provider = "postgresql"
+   url      = env("DATABASE_URL")
+ }
+
+// datasource db {
+//   provider = "sqlite"
+//   url      = "file:./dev.db"
+// }
+
+model User {
+  id String @id @default(cuid())
+  email String
+  password String
+  username String
+}
+
+model Captor {
+  id String @id @default(cuid())
+  type SensorType
+  designation String
+  rawValue_int Int @default(0)
+  rawValue_bool Boolean @default(false)
+}
+enum SensorType {
+    TEMPERATURE
+    HUMIDITY
+    BARO
+    PROXIMITY
+}
