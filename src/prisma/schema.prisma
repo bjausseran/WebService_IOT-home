@@ -29,6 +29,18 @@ model Captor {
   rawValue_int Int @default(0)
   rawValue_bool Boolean @default(false)
 }
+
+model Actuator {
+    id String @id @default(cuid())
+    type ActuatorType
+    designation String
+    state Boolean
+}
+
+enum ActuatorType {
+    BLINDS
+    LIGHT
+}
 enum SensorType {
     TEMPERATURE
     HUMIDITY
