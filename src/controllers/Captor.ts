@@ -1,30 +1,47 @@
 import { NextFunction, Request, Response } from "express";
+import { Prisma, PrismaClient, SensorType } from '@prisma/client'
+const prisma = new PrismaClient();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      res.json({ message: "get captor" });
-      return;
-    } catch (error) {
-      next(error);
+    try {      
+      // run inside `async` function
+      const captors = await prisma.captor.findMany();
+      res.json(captors)
     }
+     catch (error) {
+       res.json({ error})
+     }
   },
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json({ message: "get id captor" });
-      return;
+      const id = req.params.id;
+      const captor = await prisma.captor.findUnique({
+        where: {
+          id: id,
+        },
+      });
+      res.json(captor);
     } catch (error) {
-      next(error);
+      res.json(error)
     }
   },
 
   post: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json({ message: "Post captor" });
-      return;
+      let captor: Prisma.CaptorCreateInput
+
+      captor = {
+        type: req.body.type,
+        designation: req.body.designation,
+        rawValue_int: req.body.rawValue_int,
+        rawValue_bool: req.body.rawValue_bool
+      }
+      const createCaptor = await prisma.captor.create({ data: captor })
+      res.json({ message: "Captor created succesfully" , createCaptor})
     } catch (error) {
-      next(error);
+      res.json({error: error})
     }
   },
 

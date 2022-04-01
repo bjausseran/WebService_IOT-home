@@ -1,30 +1,45 @@
 import { NextFunction, Request, Response } from "express";
+import { Prisma, PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json({ message: "get user" });
-      return;
-    } catch (error) {
-      next(error);
+      // run inside `async` function
+      const users = await prisma.user.findMany();
+      res.json(users)
     }
+     catch (error) {
+       res.json({ error: error })
+     }
   },
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json({ message: "get id user" });
-      return;
+      const id = req.params.id;
+      const user = await prisma.user.findUnique({
+        where: {
+          id: id,
+        },
+      });
+      res.json(user);
     } catch (error) {
-      next(error);
+      res.json(error)
     }
   },
   
   post: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json({ message: "Post user" });
-      return;
+      let user: Prisma.UserCreateInput      
+      user = {
+        email: req.body.email,
+        username: req.body.username,
+        password: req.body.password
+      }
+      const createUser = await prisma.user.create({ data: user })
+      res.json({ message: "User created succesfully" , createUser})
     } catch (error) {
-      next(error);
+      res.json({error: error})
     }
   },
 
