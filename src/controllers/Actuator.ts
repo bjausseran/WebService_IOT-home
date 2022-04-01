@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Prisma, PrismaClient } from '@prisma/client'
+import { ComposeResponse } from "src/modules/response";
 const prisma = new PrismaClient();
 
 export default {
@@ -7,10 +8,10 @@ export default {
     try {      
       // run inside `async` function
       const actuators = await prisma.actuator.findMany();
-      res.json(actuators)
+      res.json(ComposeResponse(res.statusCode.toString(), actuators))
     }
      catch (error) {
-       res.json({ error})
+      res.json( ComposeResponse(res.statusCode.toString(), undefined, new Error(JSON.stringify(error))));
      }
   },
 
@@ -45,7 +46,17 @@ export default {
 
   patch: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json({ message: "patch actuator" });
+      const updateActuator = await prisma.actuator.update({
+        where: {
+          id: req.params.id,
+        },
+        data: {
+            type: req.body.type,
+            designation: req.body.designation,
+            state: req.body.state
+        }
+      });
+      res.json({ message: "patch actuator", updateActuator });
       return;
     } catch (error) {
       next(error);
@@ -54,7 +65,12 @@ export default {
   
   delete: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.json({ message: "delete actuator" });
+      const deleteActuator = await prisma.actuator.delete({
+      where: {
+        id: req.params.id,
+      },
+    })
+      res.json({ message: "delete actuator", deleteActuator });
       return;
     } catch (error) {
       next(error);

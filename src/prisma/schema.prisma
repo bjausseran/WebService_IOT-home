@@ -10,11 +10,7 @@ generator client {
    url      = env("DATABASE_URL")
  }
 
-// datasource db {
-//   provider = "sqlite"
-//   url      = "file:./dev.db"
-// }
-
+//User
 model User {
   id String @id @default(cuid())
   email String
@@ -22,6 +18,7 @@ model User {
   username String
 }
 
+//Captor
 model Captor {
   id String @id @default(cuid())
   type SensorType
@@ -30,11 +27,19 @@ model Captor {
   rawValue_bool Boolean @default(false)
 }
 
+//Actuator
 model Actuator {
     id String @id @default(cuid())
     type ActuatorType
     designation String
     state Boolean
+}
+
+// Interface 
+model ApiResponse {
+    response string
+    data Record<string, any> @default("")
+    error Error @default("")
 }
 
 enum ActuatorType {

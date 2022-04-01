@@ -6,6 +6,7 @@
 import app from "./app";
 import d from "debug";
 import http from "http";
+import { ComposeResponse } from "src/modules/response";
 const debug = d("express-typescript-boilerplate:server");
 
 /**
@@ -66,7 +67,8 @@ function onError(error: any) {
       console.error(bind + " is already in use");
       process.exit(1);
     default:
-      throw error;
+      //console.error("error : " + error.code);
+      process.exit(1);
   }
 }
 
