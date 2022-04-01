@@ -11,8 +11,8 @@ export default {
       res.json(ComposeResponse(res.statusCode.toString(), actuators))
     }
      catch (error) {
-      res.json( ComposeResponse(res.statusCode.toString(), undefined, new Error(JSON.stringify(error))));
-     }
+      next(error);
+    }
   },
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
@@ -23,9 +23,10 @@ export default {
           id: id,
         },
       });
-      res.json(actuator);
+      if(actuator != null) res.json(ComposeResponse(res.statusCode.toString(), actuator))
+      else next(); 
     } catch (error) {
-      res.json(error)
+      next(error);
     }
   },
 
@@ -37,10 +38,10 @@ export default {
         designation: req.body.designation,
         state: req.body.state
       }
-      const createCaptor = await prisma.actuator.create({ data: actuator })
-      res.json({ message: "Captor created succesfully" , createCaptor})
+      const createActuator = await prisma.actuator.create({ data: actuator })
+      res.json(ComposeResponse(res.statusCode.toString(), createActuator));
     } catch (error) {
-      res.json({error: error})
+      next(error)
     }
   },
 
@@ -56,8 +57,7 @@ export default {
             state: req.body.state
         }
       });
-      res.json({ message: "patch actuator", updateActuator });
-      return;
+      res.json(ComposeResponse(res.statusCode.toString(), updateActuator))
     } catch (error) {
       next(error);
     }
@@ -70,8 +70,7 @@ export default {
         id: req.params.id,
       },
     })
-      res.json({ message: "delete actuator", deleteActuator });
-      return;
+    res.json(ComposeResponse(res.statusCode.toString(), deleteActuator));
     } catch (error) {
       next(error);
     }

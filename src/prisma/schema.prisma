@@ -35,13 +35,6 @@ model Actuator {
     state Boolean
 }
 
-// Interface 
-model ApiResponse {
-    response string
-    data Record<string, any> @default("")
-    error Error @default("")
-}
-
 enum ActuatorType {
     BLINDS
     LIGHT

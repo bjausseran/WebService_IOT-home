@@ -9,11 +9,10 @@ export default {
       // run inside `async` function
       const users = await prisma.user.findMany();  
       res.json(ComposeResponse(res.statusCode.toString(), users))
-    
     }
      catch (error) {
-      res.json( ComposeResponse(res.statusCode.toString(), undefined, new Error(JSON.stringify(error))));
-     }
+      next(error)
+    }
   },
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
@@ -23,10 +22,11 @@ export default {
         where: {
           id: id,
         },
-      });
-      res.json(user);
+      }) as Record<string, any> | null;;
+      if(user != null) res.json(ComposeResponse(res.statusCode.toString(), user))
+      else next(); 
     } catch (error) {
-      res.json(error)
+      next(error);
     }
   },
   
@@ -39,9 +39,9 @@ export default {
         password: req.body.password
       }
       const createUser = await prisma.user.create({ data: user })
-      res.json({ message: "User created succesfully" , createUser})
+      res.json(ComposeResponse(res.statusCode.toString(), createUser));
     } catch (error) {
-      res.json({error: error})
+      next(error)
     }
   },
 
@@ -57,8 +57,7 @@ export default {
             password: req.body.password
         }
       });
-      res.json({ message: "patch user", updateUser});
-      return;
+      res.json(ComposeResponse(res.statusCode.toString(), updateUser))
     } catch (error) {
       next(error);
     }
@@ -71,8 +70,7 @@ export default {
         id: req.params.id,
       },
     })
-      res.json({ message: "delete user" });
-      return;
+    res.json(ComposeResponse(res.statusCode.toString(), deleteUser));
     } catch (error) {
       next(error);
     }

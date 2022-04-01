@@ -9,7 +9,13 @@ import indexRouter from "@/routes/Index";
 import userRouter from "@/routes/User";
 import captorRouter from "@/routes/Captor";
 import actuatorRouter from "@/routes/Actuator";
+
+import { ComposeResponse } from "src/modules/response";
+
 const app = express();
+const noDeletionStr = "Record to delete does not exist.";
+const invalidValueStr = "Got invalid value";
+const noUpdateStr = "Record to update not found.";
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -24,10 +30,12 @@ app.use("/user", userRouter);
 app.use("/captor", captorRouter);
 app.use("/actuator", actuatorRouter);
 
+
 // catch 404
 app.use(function (req: Request, res: Response, next: NextFunction) {
   // handle it how it pleases you
-  res.status(404).json({ message: "not_found" });
+  res.statusCode = 404;
+  res.json( ComposeResponse(res.statusCode.toString(), undefined, new Error("Object not found")));
 });
 
 // error handler
@@ -38,7 +46,12 @@ app.use(function (err: any, req: Request, res: Response, next: NextFunction) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render("error");
+  
+  if(err.message.includes(noDeletionStr)) err = new Error(noDeletionStr);
+  else if(err.message.includes(invalidValueStr)) err = new Error(invalidValueStr);
+  else if(err.message.includes(noUpdateStr)) err = new Error(noUpdateStr);
+
+  res.json(ComposeResponse(res.statusCode.toString(), undefined, err));
 });
 
 export default app;
