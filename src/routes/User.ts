@@ -4,6 +4,7 @@ import { CheckAuth } from "@/middlewares/authentification";
 const router = express.Router();
 const app = express();
 
+router.use(CheckAuth)
 /* GET home page. */
 router.get("/", User.get, app.use(CheckAuth));
 router.get("/login", User.log);

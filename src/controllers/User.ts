@@ -91,6 +91,7 @@ export default {
 
   patch: async (req: Request, res: Response, next: NextFunction) => {
     try {
+      let hashedPassword = (await argon2.hash(req.body.password)).toString();
       const updateUser = await prisma.user.update({
         where: {
           id: req.params.id,
@@ -98,7 +99,7 @@ export default {
         data: {
             email: req.body.email,
             username: req.body.username,
-            password: req.body.password
+            password: hashedPassword
         }
       });
       res.json(ComposeResponse(res.statusCode.toString(), updateUser))
