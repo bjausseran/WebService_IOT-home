@@ -11,6 +11,7 @@ import captorRouter from "@/routes/Captor";
 import actuatorRouter from "@/routes/Actuator";
 
 import { ComposeResponse } from "src/modules/response";
+import { exit } from "process";
 
 const app = express();
 const noDeletionStr = "Record to delete does not exist.";
@@ -29,7 +30,6 @@ app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.use("/captor", captorRouter);
 app.use("/actuator", actuatorRouter);
-
 
 // catch 404
 app.use(function (req: Request, res: Response, next: NextFunction) {

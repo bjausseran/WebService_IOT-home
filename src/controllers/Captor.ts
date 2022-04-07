@@ -1,14 +1,17 @@
-import { NextFunction, Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { Prisma, PrismaClient, SensorType } from '@prisma/client'
+
 import { ComposeResponse } from "@/modules/response";
+
 const prisma = new PrismaClient();
+const app = express();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
     try {      
       // run inside `async` function
       const captors = await prisma.captor.findMany();
-      res.json(ComposeResponse(res.statusCode.toString(), captors))
+      res.json(ComposeResponse(res.statusCode.toString(), captors));
     }
      catch (error) {
       next(error)
