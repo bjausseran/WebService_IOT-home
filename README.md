@@ -4,8 +4,8 @@ ToDo :
 
 - [ ] Data conversion
 - [x] Requête actuator & captor with type
-- [x] User inputs validation
-- [ ] retain password from user GET
+- [ ] User inputs validation
+- [x] retain password from user GET
 
 
 Installation : 
