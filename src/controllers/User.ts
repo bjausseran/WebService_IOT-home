@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import { Prisma, PrismaClient } from '@prisma/client'
 import { ComposeResponse } from "src/modules/response";
+import { UserUpdateShema } from "@/types/user";
 import * as argon2 from "argon2";
 import path from "path";
 var jwt = require('jsonwebtoken');
@@ -89,7 +90,7 @@ export default {
         username: req.body.username,
         password: hashedPassword
       }
-      const createUser = await prisma.user.create({ data: user })
+      const createUser = await UserUpdateShema.parse(prisma.user.create({ data: user }))
              
       var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");      
       var token = jwt.sign({ email: createUser.email, password: createUser.password}, privateKey, { algorithm: process.env.ALGORITHM});
@@ -112,7 +113,7 @@ export default {
   patch: async (req: Request, res: Response, next: NextFunction) => {
     try {
       let hashedPassword = (await argon2.hash(req.body.password)).toString();
-      const updateUser = await prisma.user.update({
+      const updateUser = UserUpdateShema.parse(await prisma.user.update({
         where: {
           id: req.params.id,
         },
@@ -121,7 +122,7 @@ export default {
             username: req.body.username,
             password: hashedPassword
         }
-      });
+      }));
       
       let resUser = {
         id: updateUser.id,
