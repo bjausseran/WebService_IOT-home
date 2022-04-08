@@ -36,16 +36,18 @@ export default {
 
       const password = req.body.password;
       const username = req.body.username;
+      const email = req.body.email;
       const user = await prisma.user.findFirst({
         where: {
-          username: username
+          username: username,
+          email: email
         },
       }) as Record<string, any> | null;
 
        if (await argon2.verify(user?.password, password)) {
                 
         var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");
-        var token = jwt.sign({ email: username.email, password: user?.password}, privateKey, { algorithm: process.env.ALGORITHM});
+        var token = jwt.sign({ email: user?.email, username: user?.username, password: user?.password}, privateKey, { algorithm: process.env.ALGORITHM});
         
         app.use(cookieParser());
         res.cookie("auth_token", token);
