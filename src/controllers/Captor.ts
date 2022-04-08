@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import { Captor, Prisma, PrismaClient, SensorType } from '@prisma/client'
 import { ComposeResponse } from "@/modules/response";
 import { convert } from "@/modules/data_converter";
+import {CaptorUpdateShema } from "../types/captor";
 const prisma = new PrismaClient();
 
 export default {
@@ -75,7 +76,7 @@ export default {
         rawValue_int: req.body.rawValue_int,
         rawValue_bool: req.body.rawValue_bool
       }
-      let createCaptor = await prisma.captor.create({ data: captor })
+      let createCaptor = CaptorUpdateShema.parse(await prisma.captor.create({ data: captor })) as Captor
 
       
       let convertedCaptor = convert(createCaptor as Captor);
@@ -94,7 +95,7 @@ export default {
 
   patch: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const updateCaptor = await prisma.captor.update({
+      const updateCaptor = CaptorUpdateShema.parse(await prisma.captor.update({
         where: {
           id: req.params.id,
         },
@@ -104,7 +105,7 @@ export default {
             rawValue_int: req.body.rawValue_int,
             rawValue_bool: req.body.rawValue_bool
         }
-      });
+      }));
       res.json(ComposeResponse(res.statusCode.toString(), updateCaptor))
     } catch (error) {
       next(error);

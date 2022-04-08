@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ActuatorType, Prisma, PrismaClient } from '@prisma/client'
 import { ComposeResponse } from "src/modules/response";
+import { ActuatorUpdateSchema } from "@/types/actuator";
 const prisma = new PrismaClient();
 
 export default {
@@ -49,7 +50,7 @@ export default {
         designation: req.body.designation,
         state: req.body.state
       }
-      const createActuator = await prisma.actuator.create({ data: actuator })
+      const createActuator = ActuatorUpdateSchema.parse(await prisma.actuator.create({ data: actuator }))
       res.json(ComposeResponse(res.statusCode.toString(), createActuator));
     } catch (error) {
       next(error)
@@ -58,7 +59,7 @@ export default {
 
   patch: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const updateActuator = await prisma.actuator.update({
+      const updateActuator = ActuatorUpdateSchema.parse(await prisma.actuator.update({
         where: {
           id: req.params.id,
         },
@@ -67,7 +68,7 @@ export default {
             designation: req.body.designation,
             state: req.body.state
         }
-      });
+      }));
       res.json(ComposeResponse(res.statusCode.toString(), updateActuator))
     } catch (error) {
       next(error);
