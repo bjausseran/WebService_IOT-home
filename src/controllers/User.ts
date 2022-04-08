@@ -3,8 +3,9 @@ import cookieParser from "cookie-parser";
 import { Prisma, PrismaClient } from '@prisma/client'
 import { ComposeResponse } from "src/modules/response";
 import * as argon2 from "argon2";
+import path from "path";
 var jwt = require('jsonwebtoken');
-var fs = require('fs');
+import fs from "fs";
 var app = express();
 
 const prisma = new PrismaClient();
@@ -34,8 +35,8 @@ export default {
 
        if (await argon2.verify(user?.password, password)) {
                 
-        var privateKey = fs.readFileSync(process.env.PRIVATEKEY_LOCATION);
-        var token = jwt.sign({ email: username.email, password: user?.password}, { key: privateKey, passphrase: process.env.PASSPHRASE }, { algorithm: process.env.ALGORITHM});
+        var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");
+        var token = jwt.sign({ email: username.email, password: user?.password}, privateKey, { algorithm: process.env.ALGORITHM});
         
         app.use(cookieParser());
         res.cookie("auth_token", token);
@@ -77,8 +78,8 @@ export default {
       }
       const createUser = await prisma.user.create({ data: user })
              
-      var privateKey = fs.readFileSync(process.env.PRIVATEKEY_LOCATION);
-      var token = jwt.sign({ email: createUser.email, password: createUser.password}, { key: privateKey, passphrase: process.env.PASSPHRASE }, { algorithm: process.env.ALGORITHM});
+      var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");      
+      var token = jwt.sign({ email: createUser.email, password: createUser.password}, privateKey, { algorithm: process.env.ALGORITHM});
       
       app.use(cookieParser());
       res.cookie("auth_token", token);

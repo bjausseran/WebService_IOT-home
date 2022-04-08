@@ -35,7 +35,7 @@ export default {
 
   post: async (req: Request, res: Response, next: NextFunction) => {
     try {      
-      let captor: Prisma.CaptorCreateInput
+      let captor: Prisma.CaptorCreateInput;
 
       captor = {
         type: req.body.type,

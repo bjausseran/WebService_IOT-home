@@ -5,10 +5,10 @@ const router = express.Router();
 var app = express();
 
 /* GET home page. */
-router.get("/", Captor.get, app.use(CheckAuth));
-router.get("/:id", Captor.getById, app.use(CheckAuth));
-router.post("/", Captor.post, app.use(CheckAuth));
-router.patch("/:id", Captor.patch, app.use(CheckAuth));
-router.delete("/:id", Captor.delete, app.use(CheckAuth));
+router.get("/", CheckAuth, Captor.get);
+router.get("/:id", CheckAuth, Captor.getById);
+router.post("/", CheckAuth, Captor.post);
+router.patch("/:id", CheckAuth, Captor.patch);
+router.delete("/:id", CheckAuth, Captor.delete);
 
 export default router;

@@ -1,9 +1,4 @@
-node_modules
 # Keep key out of version control
 
-.key
-.key.pub
-*/.key
-*/.key.pub
-auth/*.key
-auth/*.key.pub
+.pem
+.pem.pub
