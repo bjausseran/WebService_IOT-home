@@ -6,7 +6,7 @@ const router = express.Router();
 
 /* GET home page. */
 router.get("/", CheckAuth,User.get);
-router.get("/login", User.log);
+router.post("/login", User.log);
 router.get("/:id", CheckAuth, User.getById);
 router.post("/", User.post);
 router.patch("/:id", CheckAuth, User.patch);
