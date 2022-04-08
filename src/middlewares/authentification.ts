@@ -13,16 +13,6 @@ export var CheckAuth = async function (req: Request, res: Response, next: NextFu
     {
       let privatekey  = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), {encoding: "utf-8"});
 
-    console.log("________________________________________________________");
-    console.log("token :");
-    console.log("________________________________________________________");
-    console.log(req.cookies.auth_token);
-    console.log("________________________________________________________");
-    console.log("public key :");
-    console.log("________________________________________________________");
-    console.log(privatekey);
-    console.log("________________________________________________________");
-
       let decoded = jwt.verify(
         req.cookies.auth_token,
         privatekey, 

@@ -45,6 +45,7 @@ export default {
   post: async (req: Request, res: Response, next: NextFunction) => {
     try {
       let actuator: Prisma.ActuatorCreateInput
+      
       actuator = {
         type: req.body.type,
         designation: req.body.designation,
