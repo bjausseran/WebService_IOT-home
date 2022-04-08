@@ -14,7 +14,15 @@ export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
     try {
       // run inside `async` function
-      const users = await prisma.user.findMany();  
+      const users = await prisma.user.findMany(
+        {
+          select: {
+            id: true,
+            email: true,
+            username: true
+          }
+        }
+      );  
       res.json(ComposeResponse(res.statusCode.toString(), users))
     }
      catch (error) {
@@ -59,6 +67,11 @@ export default {
         where: {
           id: id,
         },
+        select: {
+          id: true,
+          email: true,
+          username: true
+        }
       }) as Record<string, any> | null;
       if(user != null) res.json(ComposeResponse(res.statusCode.toString(), user))
       else next(); 
@@ -80,11 +93,17 @@ export default {
              
       var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");      
       var token = jwt.sign({ email: createUser.email, password: createUser.password}, privateKey, { algorithm: process.env.ALGORITHM});
+
+      let resUser = {
+        id: createUser.id,
+        email: createUser.email,
+        username: createUser.username,
+      }
       
       app.use(cookieParser());
       res.cookie("auth_token", token);
 
-      res.json(ComposeResponse(res.statusCode.toString(), createUser));
+      res.json(ComposeResponse(res.statusCode.toString(), resUser));
     } catch (error) {
       next(error)
     }
@@ -103,7 +122,13 @@ export default {
             password: hashedPassword
         }
       });
-      res.json(ComposeResponse(res.statusCode.toString(), updateUser))
+      
+      let resUser = {
+        id: updateUser.id,
+        email: updateUser.email,
+        username: updateUser.username,
+      }
+      res.json(ComposeResponse(res.statusCode.toString(), resUser))
     } catch (error) {
       next(error);
     }

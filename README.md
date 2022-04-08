@@ -2,10 +2,10 @@
 
 ToDo :
 
-* Data conversion
-* Requête actuator & captor with type
-* User inputs validation
-* retain password from user GET
+- [ ] Data conversion
+- [x] Requête actuator & captor with type
+- [x] User inputs validation
+- [ ] retain password from user GET
 
 
 Installation : 
