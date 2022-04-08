@@ -3,6 +3,7 @@ import express from "express";
 import path from "path";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
+import { xssCheck } from "src/middlewares/xss";
 
 // Routers
 import indexRouter from "@/routes/Index";
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(xssCheck);
 
 app.use("/", indexRouter);
 app.use("/user", userRouter);
