@@ -23,8 +23,8 @@ model Captor {
   id String @id @default(cuid())
   type SensorType
   designation String
-  rawValue_int Int @default(0)
-  rawValue_bool Boolean @default(false)
+  rawValue_int Int?
+  rawValue_bool Boolean?
 }
 
 //Actuator

@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
-import { Prisma, PrismaClient, SensorType } from '@prisma/client'
+import { Captor, Prisma, PrismaClient, SensorType } from '@prisma/client'
 import { ComposeResponse } from "@/modules/response";
+import { convert } from "@/modules/data_converter";
 const prisma = new PrismaClient();
 
 export default {
@@ -19,6 +20,17 @@ export default {
         
       }
       else captors = await prisma.captor.findMany();
+
+      for(let capt of captors)
+      {
+        var convertedCaptor = convert(capt);
+        if(convertedCaptor instanceof String)
+        {
+          res.json(ComposeResponse(res.statusCode.toString(), undefined, new Error(capt.id + " is a invalid captor type")))
+        }
+        else capt = convertedCaptor as Captor;
+      }
+
       res.json(ComposeResponse(res.statusCode.toString(), captors!));
     }
      catch (error) {
@@ -29,12 +41,24 @@ export default {
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id;
-      const captor = await prisma.captor.findUnique({
+      let captor = await prisma.captor.findUnique({
         where: {
           id: id,
         },
       }) as Record<string, any> | null;
-      if(captor != null) res.json(ComposeResponse(res.statusCode.toString(), captor))
+
+
+
+      if(captor != null) 
+      {
+        var convertedCaptor = convert(captor as Captor);
+        if(convertedCaptor instanceof String)
+        {
+          res.json(ComposeResponse(res.statusCode.toString(), undefined, new Error(captor.id + " is a invalid captor type")))
+        }
+        else captor = convertedCaptor as Captor;
+        res.json(ComposeResponse(res.statusCode.toString(), captor));
+      }
       else next(); 
     } catch (error) {
       next(error);
@@ -51,7 +75,16 @@ export default {
         rawValue_int: req.body.rawValue_int,
         rawValue_bool: req.body.rawValue_bool
       }
-      const createCaptor = await prisma.captor.create({ data: captor })
+      let createCaptor = await prisma.captor.create({ data: captor })
+
+      
+      let convertedCaptor = convert(createCaptor as Captor);
+      if(convertedCaptor instanceof String)
+      {
+        res.json(ComposeResponse(res.statusCode.toString(), undefined, new Error(createCaptor.id + " is a invalid captor type")))
+      }
+      else createCaptor = convertedCaptor as Captor;
+
       res.json(ComposeResponse(res.statusCode.toString(), createCaptor));
     } catch (error) {
       next(error)
