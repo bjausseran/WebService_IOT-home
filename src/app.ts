@@ -19,6 +19,16 @@ const app = express();
 const noDeletionStr = "Record to delete does not exist.";
 const invalidValueStr = "Got invalid value";
 const noUpdateStr = "Record to update not found.";
+const noField ="Lines with + are required, lines with ? are optional";
+const noFieldAnswer ="Field email or password (probably)";
+const UniqueConstraint ="Unique constraint failed on the fields";
+const UniqueConstraintAnswer ="Unique constraint failed on the fields (email?)";
+const userNotFound ="pchstr must be a non-empty string";
+const userNotFoundAnswer ="pchstr must be a non-empty string";
+
+
+
+
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -51,9 +61,12 @@ app.use(function (err: any, req: Request, res: Response, next: NextFunction) {
   // render the error page
   res.status(err.status || 500);
   
-  // if(err.message.includes(noDeletionStr)) err = new Error(noDeletionStr);
-  // else if(err.message.includes(invalidValueStr)) err = new Error(invalidValueStr);
-  // else if(err.message.includes(noUpdateStr)) err = new Error(noUpdateStr);
+   if(err.message.includes(noDeletionStr)) err = new Error(noDeletionStr);
+   else if(err.message.includes(invalidValueStr)) err = new Error(invalidValueStr);
+   else if(err.message.includes(noUpdateStr)) err = new Error(noUpdateStr);
+   else if(err.message.includes(noField)) err = new Error(noFieldAnswer);
+   else if(err.message.includes(UniqueConstraint)) err = new Error(UniqueConstraintAnswer);
+   else if(err.message.includes(userNotFound)) err = new Error(userNotFoundAnswer);
 
   res.json(ComposeResponse(res.statusCode.toString(), undefined, err));
 });
