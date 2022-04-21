@@ -9,15 +9,28 @@ import fs from "fs"
 
 export var CheckAuth = async function (req: Request, res: Response, next: NextFunction) {
     console.log("So i'm suppose to check if dude is log right now ? aight");
-    if (req.cookies.auth_token != null && req.cookies.auth_token != "" && req.cookies.auth_token != undefined) 
+
+    let decoded: any;
+
+    if (req.headers.authorization && req.headers.authorization!.indexOf('Bearer ') !== -1) 
     {
       let privatekey  = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), {encoding: "utf-8"});
 
-      let decoded = jwt.verify(
-        req.cookies.auth_token,
-        privatekey, 
-        { algorithms: [process.env.ALGORITHM] }
-        );
+      let head = req.headers.authorization?.substring(req.headers.authorization!.indexOf('Bearer ') + 7);
+      console.log(head);
+
+      try
+      {
+       decoded = jwt.verify(
+         head,
+         privatekey, 
+         { algorithms: [process.env.ALGORITHM] }
+         );
+      }
+      catch
+      {
+        res.json( ComposeResponse("500", undefined, new Error("Wrong token")));
+      }
 
       const user = await prisma.user.findFirst({
         where: {

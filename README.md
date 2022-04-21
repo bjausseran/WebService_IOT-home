@@ -11,7 +11,7 @@ ToDo :
 ToDo :
 
 - [x] connect with username &/or email
-- [] when post user with existing unique field, create a {username email} couple
+- [ ] when post user with existing unique field, create a {username email} couple
 
 
 Installation : 

@@ -4,7 +4,6 @@ import { CheckAuth } from "@/middlewares/authentification";
 const router = express.Router();
 var app = express();
 
-//router.use(CheckAuth);
 /* GET home page. */
 router.get("/", CheckAuth, Actuator.get);
 router.get("/:id", CheckAuth, Actuator.getById);

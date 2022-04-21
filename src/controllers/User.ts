@@ -52,7 +52,7 @@ export default {
         app.use(cookieParser());
         res.cookie("auth_token", token);
         
-        res.json(ComposeResponse(res.statusCode.toString(), req.cookies.auth_token));
+        res.json(ComposeResponse(res.statusCode.toString(), {message: "sucess", id: token}));
 
        } else {
          next();
@@ -92,21 +92,25 @@ export default {
         username: req.body.username,
         password: hashedPassword
       }
-      const createUser = await UserUpdateShema.parse(prisma.user.create({ data: user }))
+      const createUser = UserUpdateShema.parse(await prisma.user.create({ data: user }))
              
       var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");      
-      var token = jwt.sign({ email: createUser.email, password: createUser.password}, privateKey, { algorithm: process.env.ALGORITHM});
-
-      let resUser = {
-        id: createUser.id,
-        email: createUser.email,
-        username: createUser.username,
-      }
+      var token = jwt.sign(
+        {
+          id: createUser.id, 
+          email: createUser.email, 
+          username: createUser.username,
+          password: "Eh beh non !"
+        }, 
+        privateKey, 
+        { 
+          algorithm: process.env.ALGORITHM
+        });
       
       app.use(cookieParser());
       res.cookie("auth_token", token);
 
-      res.json(ComposeResponse(res.statusCode.toString(), resUser));
+      res.json(ComposeResponse(res.statusCode.toString(), {message: "created", id: createUser.id, token: token}));
     } catch (error) {
       next(error)
     }

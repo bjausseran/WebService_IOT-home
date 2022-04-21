@@ -52,7 +52,7 @@ export default {
         state: req.body.state
       }
       const createActuator = ActuatorUpdateSchema.parse(await prisma.actuator.create({ data: actuator }))
-      res.json(ComposeResponse(res.statusCode.toString(), createActuator));
+      res.json(ComposeResponse(res.statusCode.toString(), {message: "created", id: createActuator.id}));
     } catch (error) {
       next(error)
     }
