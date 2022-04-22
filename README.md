@@ -2,17 +2,28 @@
 
 ## Installation : 
 
+### Node
 ```ts
 npm install
 # Create .env file (see Config below)
 ```
 
+### TypeScript
 ```ts
-sudo npm install -g prisma
-sudo npm install -g dotenv-cli
+npm install typescript --save-dev
+```
+
+### Prisma
+```ts
+sudo npm install --save-dev prisma
+sudo npm install --save-dev dotenv-cli
 sudo npx prisma generate --schema=./src/prisma/schema.prisma
 ```
+
+### Docker
 ```ts
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
 docker-compose -f ./src/docker/docker-compose.yml up
 ```
 
