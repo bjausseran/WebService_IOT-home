@@ -4,8 +4,10 @@ import { ComposeResponse } from "@/modules/response";
 import { Prisma, PrismaClient } from '@prisma/client'
 import path from "path";
 const prisma = new PrismaClient();
-let jwt = require('jsonwebtoken');
+//let jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken'
 import fs from "fs"
+import { string } from "zod";
 
 export var CheckAuth = async function (req: Request, res: Response, next: NextFunction) {
     console.log("So i'm suppose to check if dude is log right now ? aight");
@@ -24,20 +26,23 @@ export var CheckAuth = async function (req: Request, res: Response, next: NextFu
        decoded = jwt.verify(
          head,
          privatekey, 
-         { algorithms: [process.env.ALGORITHM] }
+         { algorithms: [process.env.ALGORITHM as jwt.Algorithm] }
          );
       }
       catch
       {
         res.json( ComposeResponse("500", undefined, new Error("Wrong token")));
+        return;
       }
+      
 
-      const user = await prisma.user.findFirst({
-        where: {
-          email: decoded.email,
-          password: decoded.password
-        },
-      }) as Record<string, any> | null;
+        const user = await prisma.user.findFirst({
+          where: {
+            email: decoded.email,
+            password: decoded.password
+          },
+        }) as Record<string, any> | null;
+      
 
       if(user!= null) next();
       else res.json( ComposeResponse("500", undefined, new Error("Wrong token")));
