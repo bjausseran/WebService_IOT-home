@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import { Captor, Prisma, PrismaClient, SensorType } from '@prisma/client'
 import { ComposeResponse } from "@/modules/response";
 import { CaptorR, convert } from "@/modules/data_converter";
+import { getCaptors } from "src/modules/database_controller";
 import {CaptorUpdateShema } from "../types/captor";
 import { boolean } from "zod";
 const prisma = new PrismaClient();

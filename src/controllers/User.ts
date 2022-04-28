@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import { Prisma, PrismaClient } from '@prisma/client'
 import { ComposeResponse } from "src/modules/response";
 import { UserUpdateShema } from "@/types/user";
+import { getUsers } from "src/modules/database_controller";
 import * as argon2 from "argon2";
 import path from "path";
 var jwt = require('jsonwebtoken');
@@ -13,22 +14,23 @@ const prisma = new PrismaClient();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      // run inside `async` function
-      const users = await prisma.user.findMany(
-        {
-          select: {
-            id: true,
-            email: true,
-            username: true
-          }
-        }
-      );  
-      res.json(ComposeResponse(res.statusCode.toString(), users))
-    }
-     catch (error) {
-      next(error)
-    }
+    getUsers(req, res, next);
+    // try {
+    //   // run inside `async` function
+    //   const users = await prisma.user.findMany(
+    //     {
+    //       select: {
+    //         id: true,
+    //         email: true,
+    //         username: true
+    //       }
+    //     }
+    //   );  
+    //   res.json(ComposeResponse(res.statusCode.toString(), users))
+    // }
+    //  catch (error) {
+    //   next(error)
+    // }
   },
 
   log: async (req: Request, res: Response, next: NextFunction) => {

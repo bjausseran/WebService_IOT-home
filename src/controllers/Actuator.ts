@@ -1,30 +1,32 @@
 import { NextFunction, Request, Response } from "express";
 import { ActuatorType, Prisma, PrismaClient } from '@prisma/client'
 import { ComposeResponse } from "src/modules/response";
+import { getActuators } from "src/modules/database_controller";
 import { ActuatorUpdateSchema } from "@/types/actuator";
 const prisma = new PrismaClient();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
-    try {  
-      let actuators = null;
-      const type = req.query.type;
-      if(type != null)
-      {
-        actuators = await prisma.actuator.findMany(
-        {
-          where: {
-            type: type as ActuatorType
-          }
-        });
-      }
-      else actuators = await prisma.actuator.findMany();
+    //try {  
+      getActuators(req, res, next);
+    //   let actuators = null;
+    //   const type = req.query.type;
+    //   if(type != null)
+    //   {
+    //     actuators = await prisma.actuator.findMany(
+    //     {
+    //       where: {
+    //         type: type as ActuatorType
+    //       }
+    //     });
+    //   }
+    //   else actuators = await prisma.actuator.findMany();
       
-      res.json(ComposeResponse(res.statusCode.toString(), actuators))
-    }
-     catch (error) {
-      next(error);
-    }
+    //   res.json(ComposeResponse(res.statusCode.toString(), actuators))
+    // }
+    //  catch (error) {
+    //   next(error);
+    // }
   },
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
