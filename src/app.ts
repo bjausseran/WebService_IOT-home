@@ -10,10 +10,12 @@ import indexRouter from "@/routes/Index";
 import userRouter from "@/routes/User";
 import captorRouter from "@/routes/Captor";
 import actuatorRouter from "@/routes/Actuator";
+import { Mailer } from "@/modules/mailer";
 
 import { ComposeResponse } from "src/modules/response";
-import { exit } from "process";
+import { exit, getMaxListeners } from "process";
 import cors from "cors";
+import EventEmitter from "events";
 
 const app = express();
 const noDeletionStr = "Record to delete does not exist.";
@@ -45,6 +47,13 @@ app.use("/user", userRouter);
 app.use("/sensor", captorRouter);
 app.use("/actuator", actuatorRouter);
 
+let mailer = new Mailer();
+
+mailer.on("sendStatus", (status: string) => {
+  console.log("app, MailerStatusEvent : " + status);
+  
+})
+
 // catch 404
 app.use(function (req: Request, res: Response, next: NextFunction) {
   // handle it how it pleases you
@@ -60,6 +69,8 @@ app.use(function (err: any, req: Request, res: Response, next: NextFunction) {
 
   // render the error page
   res.status(err.status || 500);
+
+
   
    if(err.message.includes(noDeletionStr)) err = new Error(noDeletionStr);
    else if(err.message.includes(invalidValueStr)) err = new Error(invalidValueStr);
@@ -67,6 +78,17 @@ app.use(function (err: any, req: Request, res: Response, next: NextFunction) {
    else if(err.message.includes(noField)) err = new Error(noFieldAnswer);
    else if(err.message.includes(UniqueConstraint)) err = new Error(UniqueConstraintAnswer);
    else if(err.message.includes(userNotFound)) err = new Error(userNotFoundAnswer);
+
+   
+  
+  let emailData = {
+    from: '"Sender Name" broderick.kshlerin31@ethereal.email',
+    to: "broderick.kshlerin31@ethereal.email",
+    subject: "Error detected",
+    text: "ERROR : " + err.message,
+    html: "<strong>ERROR : " + err.message + "</strong>"
+  }
+  mailer.emit("sendEmail", emailData);
 
   res.json(ComposeResponse(res.statusCode.toString(), undefined, err));
 });
