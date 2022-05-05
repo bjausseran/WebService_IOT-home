@@ -1,55 +1,47 @@
 import express, { NextFunction, Request, Response } from "express";
-import { Captor, Prisma, PrismaClient, SensorType } from '@prisma/client'
+
 import { ComposeResponse } from "@/modules/response";
 import { CaptorR, convert } from "@/modules/data_converter";
-import { getCaptors } from "src/modules/database_controller";
+import { Database, Captor,  SensorType } from "src/modules/database";
 import {CaptorUpdateShema } from "../types/captor";
 import { boolean } from "zod";
-const prisma = new PrismaClient();
+import { CreateData } from "@/interface/IDatabase";
+const modelName = "captor";
+const db = new Database();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
-    try {      
-      let captors: Captor[];
-      const type = req.query.type;
-      if(type != null)
-      {
-        captors = await prisma.captor.findMany(
-        {
-          where: {
-            type: type as SensorType
-          }
-        })
-        
-      }
-      else captors = await prisma.captor.findMany();
+    
+     try {      
+       let captors: Captor[];
+       const type = req.query.type;
+       if(type != null)
+       {
+         captors = await db.get(modelName, {type: type as SensorType});
+       }
+       else captors = await db.get(modelName);
+       let captorsR: CaptorR[] = [];
 
-      let captorsR: CaptorR[] = [];
+       for(let capt of captors)
+       {
+         var convertedCaptor = convert(capt);
+         if(convertedCaptor instanceof String)
+           res.json(ComposeResponse(res.statusCode.toString(), undefined, new Error(capt.id + " is a invalid captor type")))
+         else 
+           captorsR[captors.indexOf(capt)] = convertedCaptor as CaptorR;
+       }
 
-      for(let capt of captors)
-      {
-        var convertedCaptor = convert(capt);
-        if(convertedCaptor instanceof String)
-          res.json(ComposeResponse(res.statusCode.toString(), undefined, new Error(capt.id + " is a invalid captor type")))
-        else 
-          captorsR[captors.indexOf(capt)] = convertedCaptor as CaptorR;
-      }
-
-      res.json(ComposeResponse(res.statusCode.toString(), captorsR!));
-    }
-     catch (error) {
-      next(error)
-    }
+       res.json(ComposeResponse(res.statusCode.toString(), captorsR!));
+     }
+      catch (error) {
+       next(error)
+     }
   },
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id;
-      let captor = await prisma.captor.findUnique({
-        where: {
-          id: id,
-        },
-      }) as Record<string, any> | null;
+      let captor = await db.getById(modelName, id);
 
 
 
@@ -74,7 +66,7 @@ export default {
 
   post: async (req: Request, res: Response, next: NextFunction) => {
     try {      
-      let captor: Prisma.CaptorCreateInput;
+      let captor: CreateData;
 
       captor = {
         type: req.body.type,
@@ -82,7 +74,7 @@ export default {
         rawValue_int: req.body.rawValue_int,
         rawValue_bool: req.body.rawValue_bool
       }
-      let createCaptor = CaptorUpdateShema.parse(await prisma.captor.create({ data: captor })) as Captor
+      let createCaptor = CaptorUpdateShema.parse(await db.post(modelName, captor)) as Captor
 
       
       let captorR: CaptorR;
@@ -128,7 +120,7 @@ export default {
         reqOption.data.rawValue_bool = null;
       }
 
-      let updateCaptor = CaptorUpdateShema.parse(await prisma.captor.update(reqOption));
+      let updateCaptor = CaptorUpdateShema.parse(await db.patch(modelName, reqOption));
       res.json(ComposeResponse(res.statusCode.toString(), req.body))
     } catch (error) {
       next(error);
@@ -137,11 +129,7 @@ export default {
   
   delete: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const deleteCaptor = await prisma.captor.delete({
-      where: {
-        id: req.params.id,
-      },
-    })
+      const deleteCaptor = await db.remove(modelName, req.params.id);
     res.json(ComposeResponse(res.statusCode.toString(), deleteCaptor));
     } catch (error) {
       next(error);

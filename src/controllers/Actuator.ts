@@ -1,42 +1,38 @@
 import { NextFunction, Request, Response } from "express";
-import { ActuatorType, Prisma, PrismaClient } from '@prisma/client'
 import { ComposeResponse } from "src/modules/response";
-import { getActuators } from "src/modules/database_controller";
+import { Database, ActuatorType } from "src/modules/database";
 import { ActuatorUpdateSchema } from "@/types/actuator";
-const prisma = new PrismaClient();
+import { CreateData } from "@/interface/IDatabase";
+import { debug } from "console";
+const modelName = "actuator";
+const db = new Database();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
-    //try {  
-      getActuators(req, res, next);
-    //   let actuators = null;
-    //   const type = req.query.type;
-    //   if(type != null)
-    //   {
-    //     actuators = await prisma.actuator.findMany(
-    //     {
-    //       where: {
-    //         type: type as ActuatorType
-    //       }
-    //     });
-    //   }
-    //   else actuators = await prisma.actuator.findMany();
+    try {  
+      let actuators = null;
+      const type = req.query.type;
+      if(type != null)
+      {
+        actuators = await db.get(modelName, {
+            type: type as ActuatorType
+          })
+      }
       
-    //   res.json(ComposeResponse(res.statusCode.toString(), actuators))
-    // }
-    //  catch (error) {
-    //   next(error);
-    // }
+      else actuators = await db.get(modelName);
+      
+
+      res.json(ComposeResponse(res.statusCode.toString(), actuators))
+    }
+     catch (error) {
+      next(error);
+    }
   },
 
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id;
-      const actuator = await prisma.actuator.findUnique({
-        where: {
-          id: id,
-        },
-      });
+      const actuator = await db.getById(modelName, id);
       if(actuator != null) res.json(ComposeResponse(res.statusCode.toString(), actuator))
       else next(); 
     } catch (error) {
@@ -46,14 +42,16 @@ export default {
 
   post: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      let actuator: Prisma.ActuatorCreateInput
+      let actuator: CreateData
       
       actuator = {
         type: req.body.type,
         designation: req.body.designation,
         state: req.body.state
       }
-      const createActuator = ActuatorUpdateSchema.parse(await prisma.actuator.create({ data: actuator }))
+      var unparsedActuator = await db.post(modelName, actuator)
+
+      const createActuator = ActuatorUpdateSchema.parse(unparsedActuator)
       res.json(ComposeResponse(res.statusCode.toString(), {message: "created", id: createActuator.id}));
     } catch (error) {
       next(error)
@@ -62,7 +60,7 @@ export default {
 
   patch: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const updateActuator = ActuatorUpdateSchema.parse(await prisma.actuator.update({
+      let unparsedActuator = await db.patch(modelName,{
         where: {
           id: req.params.id,
         },
@@ -71,7 +69,10 @@ export default {
             designation: req.body.designation,
             state: req.body.state
         }
-      }));
+      })
+
+
+      const updateActuator = ActuatorUpdateSchema.parse(unparsedActuator);
       res.json(ComposeResponse(res.statusCode.toString(), updateActuator))
     } catch (error) {
       next(error);
@@ -80,12 +81,9 @@ export default {
   
   delete: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const deleteActuator = await prisma.actuator.delete({
-      where: {
-        id: req.params.id,
-      },
-    })
-    res.json(ComposeResponse(res.statusCode.toString(), deleteActuator));
+      const deletedActuator = await db.remove( modelName, req.params.id);
+
+    res.json(ComposeResponse(res.statusCode.toString(), deletedActuator));
     } catch (error) {
       next(error);
     }

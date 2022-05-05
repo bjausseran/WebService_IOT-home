@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import { Prisma, PrismaClient } from '@prisma/client'
 import { ComposeResponse } from "src/modules/response";
 import { UserUpdateShema } from "@/types/user";
-import { getUsers } from "src/modules/database_controller";
+import { Database } from "src/modules/database";
 import * as argon2 from "argon2";
 import path from "path";
 var jwt = require('jsonwebtoken');
@@ -11,26 +11,20 @@ import fs from "fs";
 var app = express();
 
 const prisma = new PrismaClient();
+const modelName = "user";
+const db = new Database();
 
 export default {
   get: async (req: Request, res: Response, next: NextFunction) => {
-    getUsers(req, res, next);
-    // try {
-    //   // run inside `async` function
-    //   const users = await prisma.user.findMany(
-    //     {
-    //       select: {
-    //         id: true,
-    //         email: true,
-    //         username: true
-    //       }
-    //     }
-    //   );  
-    //   res.json(ComposeResponse(res.statusCode.toString(), users))
-    // }
-    //  catch (error) {
-    //   next(error)
-    // }
+    try {
+      // run inside `async` function
+      const users = await db.get(modelName);
+      delete users["password"];
+      res.json(ComposeResponse(res.statusCode.toString(), users))
+    }
+     catch (error) {
+      next(error)
+    }
   },
 
   log: async (req: Request, res: Response, next: NextFunction) => {
@@ -39,11 +33,9 @@ export default {
       const password = req.body.password;
       const username = req.body.username;
       const email = req.body.email;
-      const user = await prisma.user.findFirst({
-        where: {
-          username: username,
-          email: email
-        },
+      const user = await db.getUser({
+        username: username,
+        email: email
       }) as Record<string, any> | null;
 
        if (await argon2.verify(user?.password, password)) {
@@ -51,8 +43,8 @@ export default {
         var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");
         var token = jwt.sign({ email: user?.email, username: user?.username, password: user?.password}, privateKey, { algorithm: process.env.ALGORITHM});
         
-        app.use(cookieParser());
-        res.cookie("auth_token", token);
+        //app.use(cookieParser());
+        //res.cookie("auth_token", token);
         
         res.json(ComposeResponse(res.statusCode.toString(), {message: "sucess", id: token}));
 
@@ -68,17 +60,13 @@ export default {
   getById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id;
-      const user = await prisma.user.findUnique({
-        where: {
-          id: id,
-        },
-        select: {
-          id: true,
-          email: true,
-          username: true
-        }
-      }) as Record<string, any> | null;
-      if(user != null) res.json(ComposeResponse(res.statusCode.toString(), user))
+      const user = await db.getById(modelName, id);
+      console.log("get by id user")
+      if(user != null) 
+      {
+        delete user["password"];
+        res.json(ComposeResponse(res.statusCode.toString(), user));
+      }
       else next(); 
     } catch (error) {
       next(error);
@@ -94,7 +82,7 @@ export default {
         username: req.body.username,
         password: hashedPassword
       }
-      const createUser = UserUpdateShema.parse(await prisma.user.create({ data: user }))
+      const createUser = UserUpdateShema.parse(await db.post(modelName, user))
              
       var privateKey = fs.readFileSync(path.resolve(__dirname, process.env.PRIVATEKEY_LOCATION!), "utf-8");      
       var token = jwt.sign(
@@ -121,7 +109,7 @@ export default {
   patch: async (req: Request, res: Response, next: NextFunction) => {
     try {
       let hashedPassword = (await argon2.hash(req.body.password)).toString();
-      const updateUser = UserUpdateShema.parse(await prisma.user.update({
+      const updateUser = UserUpdateShema.parse(await db.patch(modelName, {
         where: {
           id: req.params.id,
         },
@@ -145,11 +133,7 @@ export default {
   
   delete: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const deleteUser = await prisma.user.delete({
-      where: {
-        id: req.params.id,
-      },
-    })
+      const deleteUser = await db.remove(modelName, req.params.id)
     res.json(ComposeResponse(res.statusCode.toString(), deleteUser));
     } catch (error) {
       next(error);
