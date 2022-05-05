@@ -78,14 +78,20 @@ export class Database implements IDatabase {
             },
           });
     }
-    getUser(arg1: { username: any; email: any; }): Record<string, any> | PromiseLike<Record<string, any> | null> | null {
+    async getUser(username: any, email: any ): Promise<Record<string, any> | PromiseLike<Record<string, any> | null> | null> {
         
-        return prisma["user"].findMany({
+        console.log("Database, getUser : param name = " + username);
+        console.log("Database, getUser : param email = " + email);
+        let result = await prisma.user.findMany({
             where: {
-                 username: arg1.username,
-                 email: arg1.email
+                 username: username,
+                 email: email
             },
           });
+        console.log("Database, getUser : result = " + result[0].email);
+        console.log("Database, getUser : result = " + result[0].username);
+        console.log("Database, getUser : result = " + result[0].password);
+        return result[0];
       }
       
 }
